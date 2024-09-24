@@ -31,8 +31,37 @@ class RestaurantList(Resource):
             restaurant.to_dict(only=('id', 'name', 'address',))
             for restaurant in restaurants
         ]
+    
+class RestaurantID(Resource):
+    def get(self, id):
+        restaurant = Restaurant.query.get(id)
+        if restaurant:
+            restaurant_data = restaurant.to_dict(rules=('restaurant_pizzas',))
+            
+            response_data = {
+                "id": restaurant_data['id'],
+                "name": restaurant_data['name'],
+                "address": restaurant_data['address'],
+                "restaurant_pizzas": []
+            }
+            
+            for rp in restaurant_data['restaurant_pizzas']:
+                pizza = Pizza.query.get(rp['pizza_id'])
+                restaurant_pizza = {
+                    "id": rp['id'],
+                    "price": rp['price'],
+                    "pizza_id": rp['pizza_id'],
+                    "restaurant_id": rp['restaurant_id'],
+                    "pizza": pizza.to_dict()
+                }
+                response_data['restaurant_pizzas'].append(restaurant_pizza)
+            
+            return response_data, 200
+        else:
+            return {"error": "Restaurant not found"}, 404
 
 api.add_resource(RestaurantList, '/restaurants')
+api.add_resource(RestaurantID, '/restaurants/<int:id>')
 
 
 if __name__ == "__main__":
