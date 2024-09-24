@@ -20,7 +20,6 @@ class Restaurant(db.Model, SerializerMixin):
     name = db.Column(db.String)
     address = db.Column(db.String)
 
-    # Corrected relationship
     restaurant_pizzas = db.relationship("RestaurantPizza", back_populates="restaurant")
     
     serialize_rules = ('restaurant_pizzas.restaurant',)
