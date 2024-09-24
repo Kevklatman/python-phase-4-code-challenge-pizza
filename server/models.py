@@ -23,7 +23,7 @@ class Restaurant(db.Model, SerializerMixin):
     # add relationship #remember delete method relat if needed
     restaurant_pizzas = db.relationship("RestaurantPizzas", back_populates="restaurant" )
     # add serialization rules
-
+    serialize_rules = ('restaurant_pizzas.restaurant',)
     def __repr__(self):
         return f"<Restaurant {self.name}>"
 
@@ -38,7 +38,7 @@ class Pizza(db.Model, SerializerMixin):
     # add relationship #remember delete method relat if needed
     restaurant_pizzas = db.relationship("RestaurantPizza", back_populates='pizza')
     # add serialization rules
-
+    serialize_rules = ('-restaurant_pizzas.pizza',)
     def __repr__(self):
         return f"<Pizza {self.name}, {self.ingredients}>"
 
@@ -56,7 +56,7 @@ class RestaurantPizza(db.Model, SerializerMixin):
     pizza = db.relationship("Pizza", back_populates="restaurant_pizzas")
     restaurant = db.relationship("Restaurant", back_populates="restaurant_pizzas")
     # add serialization rules
-
+    serialize_rules = ('-pizza.restaurant_pizzas', '-restaurant.restaurant_pizzas')
     # add validation
 
     def __repr__(self):
