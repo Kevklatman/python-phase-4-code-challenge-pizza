@@ -72,7 +72,7 @@ class PizzaList(Resource):
         return [pizza.to_dict() for pizza in pizzas], 200
     
 
-class RestaurantPizzaResource(Resource):
+class RestaurantPizzaPost(Resource):
     def post(self):
         data = request.get_json()
 
@@ -107,7 +107,7 @@ class RestaurantPizzaResource(Resource):
 
         
 
-api.add_resource(RestaurantPizzaResource, '/restaurant_pizzas')
+api.add_resource(RestaurantPizzaPost, '/restaurant_pizzas')
 
 api.add_resource(RestaurantList, '/restaurants')
 api.add_resource(RestaurantByID, '/restaurants/<int:id>')
