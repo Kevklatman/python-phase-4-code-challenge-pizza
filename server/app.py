@@ -33,7 +33,7 @@ class RestaurantByID(Resource):
     def get(self, id):
         restaurant = Restaurant.query.get(id)
         if restaurant:
-            restaurant_data = restaurant.to_dict(rules=('restaurant_pizzas',))
+            restaurant_data = restaurant.to_dict()
             
             response_data = {
                 "id": restaurant_data['id'],
@@ -42,14 +42,13 @@ class RestaurantByID(Resource):
                 "restaurant_pizzas": []
             }
             
-            for rp in restaurant_data['restaurant_pizzas']:
-                pizza = Pizza.query.get(rp['pizza_id'])
+            for rp in restaurant.restaurant_pizzas:
                 restaurant_pizza = {
-                    "id": rp['id'],
-                    "price": rp['price'],
-                    "pizza_id": rp['pizza_id'],
-                    "restaurant_id": rp['restaurant_id'],
-                    "pizza": pizza.to_dict()
+                    "id": rp.id,
+                    "price": rp.price,
+                    "pizza_id": rp.pizza_id,
+                    "restaurant_id": rp.restaurant_id,
+                    "pizza": rp.pizza.to_dict()
                 }
                 response_data['restaurant_pizzas'].append(restaurant_pizza)
             
@@ -65,6 +64,7 @@ class RestaurantByID(Resource):
             return '', 204  
         else:
             return {"error": "Restaurant not found"}, 404
+
         
 class PizzaList(Resource):
     def get(self):
@@ -85,18 +85,7 @@ class RestaurantPizzaPost(Resource):
             db.session.add(new_restaurant_pizza)
             db.session.commit()
 
-            pizza = Pizza.query.get(data['pizza_id'])
-            restaurant = Restaurant.query.get(data['restaurant_id'])
-
-            response_data = {
-                "id": new_restaurant_pizza.id,
-                "price": new_restaurant_pizza.price,
-                "pizza_id": new_restaurant_pizza.pizza_id,
-                "restaurant_id": new_restaurant_pizza.restaurant_id,
-                "pizza": pizza.to_dict(),
-                "restaurant": restaurant.to_dict(only=('id', 'name', 'address'))
-            }
-
+            response_data = new_restaurant_pizza.to_dict()
             return make_response(response_data, 201)
 
         except ValueError as e:
@@ -108,7 +97,6 @@ class RestaurantPizzaPost(Resource):
         
 
 api.add_resource(RestaurantPizzaPost, '/restaurant_pizzas')
-
 api.add_resource(RestaurantList, '/restaurants')
 api.add_resource(RestaurantByID, '/restaurants/<int:id>')
 api.add_resource(PizzaList, '/pizzas')
