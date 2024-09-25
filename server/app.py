@@ -27,12 +27,9 @@ def index():
 class RestaurantList(Resource):
     def get(self):
         restaurants = Restaurant.query.all()
-        return [
-            restaurant.to_dict(only=('id', 'name', 'address',))
-            for restaurant in restaurants
-        ]
+        return [restaurant.to_dict() for restaurant in restaurants]
     
-class RestaurantID(Resource):
+class RestaurantByID(Resource):
     def get(self, id):
         restaurant = Restaurant.query.get(id)
         if restaurant:
@@ -59,9 +56,27 @@ class RestaurantID(Resource):
             return response_data, 200
         else:
             return {"error": "Restaurant not found"}, 404
+        
+    def delete(self, id):
+        restaurant = Restaurant.query.get(id)
+        if restaurant:
+            db.session.delete(restaurant)
+            db.session.commit()
+            return '', 204  # 204 No Content
+        else:
+            return {"error": "Restaurant not found"}, 404
+        
+class PizzaList(Resource):
+    def get(self):
+        pizzas = Pizza.query.all()
+        return [pizza.to_dict() for pizza in pizzas], 200
+        
+
 
 api.add_resource(RestaurantList, '/restaurants')
-api.add_resource(RestaurantID, '/restaurants/<int:id>')
+api.add_resource(RestaurantByID, '/restaurants/<int:id>')
+api.add_resource(PizzaList, '/pizzas')
+
 
 
 if __name__ == "__main__":
