@@ -62,7 +62,7 @@ class RestaurantByID(Resource):
         if restaurant:
             db.session.delete(restaurant)
             db.session.commit()
-            return '', 204  # 204 No Content
+            return '', 204  
         else:
             return {"error": "Restaurant not found"}, 404
         
@@ -70,8 +70,44 @@ class PizzaList(Resource):
     def get(self):
         pizzas = Pizza.query.all()
         return [pizza.to_dict() for pizza in pizzas], 200
+    
+
+class RestaurantPizzaResource(Resource):
+    def post(self):
+        data = request.get_json()
+
+        try:
+            new_restaurant_pizza = RestaurantPizza(
+                price=data['price'],
+                pizza_id=data['pizza_id'],
+                restaurant_id=data['restaurant_id']
+            )
+            db.session.add(new_restaurant_pizza)
+            db.session.commit()
+
+            pizza = Pizza.query.get(data['pizza_id'])
+            restaurant = Restaurant.query.get(data['restaurant_id'])
+
+            response_data = {
+                "id": new_restaurant_pizza.id,
+                "price": new_restaurant_pizza.price,
+                "pizza_id": new_restaurant_pizza.pizza_id,
+                "restaurant_id": new_restaurant_pizza.restaurant_id,
+                "pizza": pizza.to_dict(),
+                "restaurant": restaurant.to_dict(only=('id', 'name', 'address'))
+            }
+
+            return make_response(response_data, 201)
+
+        except ValueError as e:
+            return make_response({"errors": ["validation errors"]}, 400)
+        except Exception as e:
+            db.session.rollback()
+            return make_response({"errors": ["validation errors"]}, 400)
+
         
 
+api.add_resource(RestaurantPizzaResource, '/restaurant_pizzas')
 
 api.add_resource(RestaurantList, '/restaurants')
 api.add_resource(RestaurantByID, '/restaurants/<int:id>')
